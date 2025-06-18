@@ -1,0 +1,81 @@
+<svg width="800" height="160" viewBox="0 0 800 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Modern gradient -->
+    <linearGradient id="modernGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Accent gradient -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Subtle glow -->
+    <filter id="subtleGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Clean background -->
+  <rect width="800" height="160" fill="#ffffff"/>
+  
+  <!-- Minimal geometric accent -->
+  <circle cx="120" cy="80" r="6" fill="url(#accentGradient)" opacity="0.6"/>
+  <circle cx="680" cy="80" r="6" fill="url(#accentGradient)" opacity="0.6"/>
+  
+  <!-- Simple neural network visualization -->
+  <g opacity="0.3">
+    <!-- Left network -->
+    <circle cx="100" cy="70" r="3" fill="url(#modernGradient)"/>
+    <circle cx="100" cy="90" r="3" fill="url(#modernGradient)"/>
+    <circle cx="140" cy="80" r="3" fill="url(#modernGradient)"/>
+    <line x1="100" y1="70" x2="140" y2="80" stroke="url(#modernGradient)" stroke-width="1"/>
+    <line x1="100" y1="90" x2="140" y2="80" stroke="url(#modernGradient)" stroke-width="1"/>
+    
+    <!-- Right network -->
+    <circle cx="660" cy="80" r="3" fill="url(#modernGradient)"/>
+    <circle cx="700" cy="70" r="3" fill="url(#modernGradient)"/>
+    <circle cx="700" cy="90" r="3" fill="url(#modernGradient)"/>
+    <line x1="660" y1="80" x2="700" y2="70" stroke="url(#modernGradient)" stroke-width="1"/>
+    <line x1="660" y1="80" x2="700" y2="90" stroke="url(#modernGradient)" stroke-width="1"/>
+  </g>
+  
+  <!-- Main brand name -->
+  <text x="400" y="70" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="52" 
+        font-weight="700" 
+        text-anchor="middle" 
+        fill="url(#modernGradient)">
+    NEMESIS
+  </text>
+  
+  <!-- Clean subtitle -->
+  <text x="400" y="95" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="16" 
+        font-weight="400" 
+        text-anchor="middle" 
+        fill="#6b7280">
+    Adversarial Robustness Toolkit
+  </text>
+  
+  <!-- Modern tagline -->
+  <text x="400" y="115" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="13" 
+        font-weight="300" 
+        text-anchor="middle" 
+        fill="#9ca3af">
+    Build stronger AI through intelligent adversarial testing
+  </text>
+  
+  <!-- Minimal accent line -->
+  <rect x="200" y="130" width="400" height="2" fill="url(#accentGradient)" opacity="0.3" rx="1"/>
+</svg>
