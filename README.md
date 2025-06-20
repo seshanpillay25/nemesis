@@ -48,6 +48,326 @@ cd nemesis
 pip install -e .
 ```
 
+## 🧪 Testing Your Models Locally
+
+Nemesis supports testing with various local model setups, including Ollama, local transformers, and custom models. Here's how to get started with different scenarios:
+
+### 🦙 Testing with Ollama
+
+[Ollama](https://ollama.ai) makes it easy to run large language models locally. Nemesis can test these models for robustness:
+
+```python
+import requests
+from nemesis import summon_nemesis
+from nemesis.models import OllamaWrapper
+
+# Wrap your Ollama model for Nemesis testing
+class OllamaModel:
+    def __init__(self, model_name="llama2", base_url="http://localhost:11434"):
+        self.model_name = model_name
+        self.base_url = base_url
+    
+    def predict(self, text_input):
+        response = requests.post(
+            f"{self.base_url}/api/generate",
+            json={"model": self.model_name, "prompt": text_input, "stream": False}
+        )
+        return response.json()["response"]
+
+# Create and test your Ollama model
+ollama_model = OllamaModel("llama2")
+nemesis = summon_nemesis(ollama_model, name="LlamaBane")
+
+# Test for prompt injection vulnerabilities
+weaknesses = nemesis.find_weakness(attack_budget=50)
+print(f"Found {len(weaknesses)} potential vulnerabilities")
+```
+
+### 🤗 Hugging Face Transformers
+
+Test local transformer models with full GPU acceleration:
+
+```python
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from nemesis import summon_nemesis
+
+# Load a local BERT model
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased")
+
+# Wrap for text classification testing
+class HuggingFaceWrapper:
+    def __init__(self, model, tokenizer):
+        self.model = model
+        self.tokenizer = tokenizer
+    
+    def predict(self, text):
+        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+        outputs = self.model(**inputs)
+        return outputs.logits
+
+wrapped_model = HuggingFaceWrapper(model, tokenizer)
+nemesis = summon_nemesis(wrapped_model, name="BertNemesis")
+
+# Test robustness against text attacks
+armor = nemesis.forge_armor(strategy="robust")
+protected_model = armor.apply(wrapped_model)
+```
+
+### 🖼️ Computer Vision Models
+
+Test your local image classification models:
+
+```python
+import torch
+import torchvision.models as models
+from nemesis import summon_nemesis
+
+# Load a pretrained ResNet
+model = models.resnet18(pretrained=True)
+model.eval()
+
+# Create nemesis for image attacks
+nemesis = summon_nemesis(model, name="VisionBane")
+
+# Test with sample images
+import torchvision.transforms as transforms
+from PIL import Image
+
+# Prepare test image
+transform = transforms.Compose([
+    transforms.Resize(224),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+])
+
+# Load and test an image
+test_image = Image.open("path/to/your/image.jpg")
+input_tensor = transform(test_image).unsqueeze(0)
+
+# Find vulnerabilities
+weaknesses = nemesis.find_weakness(attack_budget=100)
+
+# Generate adversarial examples
+from nemesis.attacks import Storm
+storm = Storm(model)
+adversarial_result = storm.unleash(input_tensor, epsilon=0.03)
+
+if adversarial_result.success:
+    print("Model fooled! Adversarial attack succeeded.")
+    # Visualize the attack
+    nemesis.visualize_attack(adversarial_result)
+```
+
+### 🔬 Custom Model Testing
+
+Test any custom PyTorch or TensorFlow model:
+
+```python
+import torch.nn as nn
+from nemesis import summon_nemesis
+
+# Your custom model
+class CustomMLP(nn.Module):
+    def __init__(self, input_size=784, hidden_size=128, num_classes=10):
+        super().__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, hidden_size)
+        self.fc3 = nn.Linear(hidden_size, num_classes)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
+    
+    def forward(self, x):
+        x = x.view(x.size(0), -1)  # Flatten
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+# Load your trained model
+model = CustomMLP()
+model.load_state_dict(torch.load("your_model.pth"))
+model.eval()
+
+# Create nemesis with different personalities
+personalities = ["aggressive", "cunning", "adaptive"]
+
+for personality in personalities:
+    nemesis = summon_nemesis(model, personality=personality)
+    report = nemesis.find_weakness()
+    print(f"{personality} nemesis found {len(report)} vulnerabilities")
+```
+
+### 🏁 Quick Testing Script
+
+Create a `test_model.py` script for rapid model testing:
+
+```python
+#!/usr/bin/env python3
+"""
+Quick model robustness testing script
+Usage: python test_model.py --model-path your_model.pth --data-path test_data/
+"""
+
+import argparse
+import torch
+from nemesis import summon_nemesis
+from nemesis.arena import Arena
+
+def test_model_robustness(model_path, test_data_path=None):
+    """Test a model's robustness quickly."""
+    
+    # Load your model
+    model = torch.load(model_path)
+    model.eval()
+    
+    print("🏛️ Nemesis Model Testing Suite 🏛️")
+    print("=" * 50)
+    
+    # Create arena for comprehensive testing
+    arena = Arena("Robustness Testing Arena")
+    
+    # Battle with different nemesis personalities
+    personalities = ["aggressive", "cunning", "adaptive", "relentless"]
+    
+    for personality in personalities:
+        print(f"\n⚔️ Testing against {personality} nemesis...")
+        
+        battle_result = arena.legendary_battle(
+            model=model,
+            rounds=5,
+            nemesis_personality=personality,
+            evolution_enabled=True
+        )
+        
+        print(f"✅ Robustness Score: {battle_result.final_robustness_score:.3f}")
+        print(f"📈 Improvement: {battle_result.improvement_gained:.3f}")
+    
+    # Show final statistics
+    legends = arena.hall_of_legends()
+    
+    return legends
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test model robustness with Nemesis")
+    parser.add_argument("--model-path", required=True, help="Path to your model file")
+    parser.add_argument("--data-path", help="Path to test data (optional)")
+    
+    args = parser.parse_args()
+    test_model_robustness(args.model_path, args.data_path)
+```
+
+### 🐳 Docker Testing
+
+Test models in isolated Docker environments:
+
+```dockerfile
+# Dockerfile for Nemesis testing
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install Nemesis
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Copy your model and test scripts
+COPY your_model.pth .
+COPY test_script.py .
+
+# Run robustness tests
+CMD ["python", "test_script.py", "--model-path", "your_model.pth"]
+```
+
+```bash
+# Build and run
+docker build -t nemesis-test .
+docker run -v $(pwd)/results:/app/results nemesis-test
+```
+
+### 📊 Batch Model Testing
+
+Test multiple models automatically:
+
+```python
+import os
+from pathlib import Path
+from nemesis.arena import Arena
+
+def batch_test_models(model_directory):
+    """Test all models in a directory."""
+    
+    arena = Arena("Batch Testing Arena")
+    results = {}
+    
+    model_files = Path(model_directory).glob("*.pth")
+    
+    for model_path in model_files:
+        print(f"Testing {model_path.name}...")
+        
+        try:
+            model = torch.load(model_path)
+            model.eval()
+            
+            # Quick robustness test
+            battle_result = arena.legendary_battle(
+                model=model,
+                rounds=3,
+                battle_name=f"Test: {model_path.name}"
+            )
+            
+            results[model_path.name] = {
+                'robustness_score': battle_result.final_robustness_score,
+                'improvement': battle_result.improvement_gained,
+                'status': 'success'
+            }
+            
+        except Exception as e:
+            results[model_path.name] = {
+                'status': 'failed',
+                'error': str(e)
+            }
+    
+    return results
+
+# Run batch testing
+results = batch_test_models("./models/")
+print("📊 Batch Testing Results:")
+for model_name, result in results.items():
+    if result['status'] == 'success':
+        print(f"✅ {model_name}: {result['robustness_score']:.3f} robustness")
+    else:
+        print(f"❌ {model_name}: {result['error']}")
+```
+
+### 🔧 Troubleshooting Local Testing
+
+Common issues and solutions:
+
+```python
+# Handle CUDA/CPU compatibility
+import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+
+# Memory management for large models
+torch.cuda.empty_cache()  # Clear GPU memory
+
+# Handle different input formats
+def normalize_inputs(inputs):
+    """Normalize inputs for consistent testing."""
+    if isinstance(inputs, str):
+        # Text input
+        return inputs
+    elif hasattr(inputs, 'shape'):
+        # Tensor input
+        return inputs.float()
+    else:
+        # Convert to tensor
+        return torch.tensor(inputs, dtype=torch.float32)
+```
+
 ## 🗡️ Attack Arsenal
 
 ### Evasion Attacks
@@ -296,7 +616,5 @@ Nemesis stands on the shoulders of giants:
 - Greek mythology for epic inspiration
 
 ---
-
-*"In the eternal dance between sword and shield, model and adversary, legends are born. Face your nemesis, embrace the challenge, and emerge victorious."*
 
 **⚔️ May your models be ever stronger ⚔️**
